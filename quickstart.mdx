@@ -1,100 +1,129 @@
 ---
 title: 'Quickstart'
-description: 'Get started with Orgo in minutes'
+description: 'Get up and running with Orgo in minutes'
 ---
 
-## Install
+<Steps>
+  <Step title="Install the SDK">
+    Install the Orgo SDK using pip:
+    
+    ```bash
+    pip install orgo
+    ```
+  </Step>
+  
+  <Step title="Set up your environment">
+    Add your API key to your environment variables:
+    
+    ```bash
+    # In your terminal
+    export ORGO_API_KEY=your_api_key
+    
+    # Or in your .env file
+    ORGO_API_KEY=your_api_key
+    ```
+    
+    <Tip>
+      Don't have an API key? [Create an account](https://www.orgo.ai/start) to get one.
+    </Tip>
+  </Step>
+  
+  <Step title="Connect to a computer">
+    Create a connection to a virtual computer:
+    
+    ```python
+    from orgo import Computer
+    
+    # Start a new computer
+    computer = Computer()  # Uses 'ORGO_API_KEY' environment variable
+    
+    # Or connect to an existing one
+    computer = Computer(project_id="existing_id")
+    ```
+  </Step>
+  
+  <Step title="Perform actions">
+    Control the computer with simple commands:
+    
+    ```python
+    # Mouse actions
+    computer.left_click(100, 200)
+    computer.right_click(300, 400)
+    
+    # Keyboard input
+    computer.type("Hello world")
+    computer.key("Enter")
+    
+    # Take a screenshot
+    screenshot = computer.screenshot()
+    ```
+  </Step>
+  
+  <Step title="Integrate with Anthropic">
+    Connect your Orgo computer with Claude:
+    
+    ```python
+    from orgo.adapters import AnthropicAdapter
+    import anthropic
+    
+    # Set up the adapter
+    adapter = AnthropicAdapter(computer)
+    claude = anthropic.Anthropic()
+    
+    # Create a request with the computer tool
+    response = claude.beta.messages.create(
+        model="claude-3-7-sonnet-20250219",
+        tools=[adapter.get_tool_definition()],
+        messages=[{"role": "user", "content": "Open Firefox"}],
+        betas=["computer-use-2025-01-24"]
+    )
+    
+    # Handle Claude's tool request
+    if response.stop_reason == "tool_use":
+        tool = next(b for b in response.content if b.type == "tool_use")
+        
+        # Execute the requested action
+        if tool.input.get("action") == "left_click":
+            x, y = tool.input["coordinate"]
+            computer.left_click(x, y)
+        elif tool.input.get("action") == "type":
+            computer.type(tool.input["text"])
+        
+        # Return result to Claude
+        tool_result = adapter.format_result(tool_id=tool.id)
+    ```
+  </Step>
+  
+  <Step title="Clean up">
+    Always shut down your computer when done:
+    
+    ```python
+    # Terminate the computer instance
+    computer.shutdown()
+    ```
+    
+    <Warning>
+      Forgetting to shut down computers may result in unnecessary usage charges.
+    </Warning>
+  </Step>
+</Steps>
 
-```bash
-pip install orgo
-```
+## Complete Example
 
-## Setup
-
-```python
-from orgo import Computer
-
-# Start a new computer
-computer = Computer()  # Uses 'ORGO_API_KEY' environment variable
-
-# Or connect to existing one
-computer = Computer(project_id="existing_id")
-```
-
-## Basic Actions
-
-```python
-# Mouse actions
-computer.left_click(100, 200)
-computer.right_click(300, 400)
-computer.scroll(direction="down", amount=3)
-
-# Keyboard input
-computer.type("Hello world")
-computer.key("Enter")
-
-# Take screenshot
-screenshot = computer.screenshot()
-
-# When done
-computer.shutdown()
-```
-
-## Integrate with Anthropic
+Here's a full example of using Orgo with Anthropic:
 
 ```python
 from orgo import Computer
 from orgo.adapters import AnthropicAdapter
 import anthropic
 
-# Setup
-computer = Computer()
-adapter = AnthropicAdapter(computer)
-claude = anthropic.Anthropic()
-
-# Get tool definition for Claude
-tool_definition = adapter.get_tool_definition()
-
-# Use with Claude
-response = claude.beta.messages.create(
-    model="claude-3-7-sonnet-20250219",
-    tools=[tool_definition],
-    messages=[{"role": "user", "content": "Open Firefox"}],
-    betas=["computer-use-2025-01-24"]
-)
-
-# Handle tool use request
-if response.stop_reason == "tool_use":
-    tool = next(b for b in response.content if b.type == "tool_use")
-    
-    # Execute action
-    if tool.input.get("action") == "left_click":
-        x, y = tool.input["coordinate"]
-        computer.left_click(x, y)
-    elif tool.input.get("action") == "type":
-        computer.type(tool.input["text"])
-    
-    # Return result to Claude
-    tool_result = adapter.format_result(tool_id=tool.id)
-```
-
-## Full Example
-
-Create a file named `example.py`:
-
-```python
-import os
-from orgo import Computer
-from orgo.adapters import AnthropicAdapter
-import anthropic
-
-# Initialize
+# Initialize components
 computer = Computer()
 adapter = AnthropicAdapter(computer)
 claude = anthropic.Anthropic()
 
 try:
-    # Start conversation
+    # Initial request
     messages = [{"role": "user", "content": "Open Firefox and go to anthropic.com"}]
     
     response = claude.beta.messages.create(
@@ -106,7 +135,7 @@ try:
     
     # Tool use loop
     while response.stop_reason == "tool_use":
-        # Find tool use request
+        # Get tool request
         tool = next(b for b in response.content if b.type == "tool_use")
         
         # Execute action
@@ -117,12 +146,9 @@ try:
         elif tool.input.get("action") == "key":
             computer.key(tool.input["text"])
         
-        # Format result
-        tool_result = adapter.format_result(tool_id=tool.id)
-        
-        # Continue conversation
+        # Return result to Claude
         messages.append({"role": "assistant", "content": response.content})
-        messages.append({"role": "user", "content": [tool_result]})
+        messages.append({"role": "user", "content": [adapter.format_result(tool_id=tool.id)]})
         
         response = claude.beta.messages.create(
             model="claude-3-7-sonnet-20250219",
@@ -135,12 +161,6 @@ try:
 finally:
     # Always clean up
     computer.shutdown()
-```
-
-Run the example:
-
-```bash
-python example.py
 ```
 
 <CardGroup cols={2}>
