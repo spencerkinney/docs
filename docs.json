@@ -1,6 +1,5 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "maple",
   "name": "Orgo",
   "description": "Desktop infrastructure for AI agents",
   "colors": {
@@ -13,19 +12,17 @@
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
   },
-  "styling": {},
-
   "navbar": {
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:spencer@orgo.ai"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "href": "https://www.orgo.ai/projects"
     }
   },
   "navigation": {
@@ -37,19 +34,13 @@
             "group": "Get Started",
             "pages": [
               "introduction",
-              "quickstart",
-              "development"
+              "quickstart"
             ]
           },
           {
-            "group": "Essentials",
+            "group": "Integration",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
+              "guides/anthropic-integration"
             ]
           }
         ]
@@ -58,18 +49,16 @@
         "tab": "API Reference",
         "groups": [
           {
-            "group": "API Documentation",
+            "group": "Client",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/computer",
+              "api-reference/adapters"
             ]
           },
           {
-            "group": "Endpoint Examples",
+            "group": "Models",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/anthropic"
             ]
           }
         ]
@@ -79,17 +68,12 @@
       "anchors": [
         {
           "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
+          "href": "https://docs.orgo.ai",
           "icon": "book-open-cover"
         },
         {
-          "anchor": "Community",
-          "href": "https://mintlify.com/community",
-          "icon": "slack"
-        },
-        {
           "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
+          "href": "https://www.orgo.ai/blog",
           "icon": "newspaper"
         }
       ]
@@ -97,9 +81,8 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "github": "https://github.com/orgo",
+      "x": "https://twitter.com/orgoai"
     }
   },
   "appearance": {
