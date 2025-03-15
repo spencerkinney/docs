@@ -90,6 +90,11 @@
           "icon": "book-open-cover"
         },
         {
+          "anchor": "Developer Console",
+          "href": "https://www.orgo.ai/start",
+          "icon": "code-branch"
+        },
+        {
           "anchor": "Blog",
           "href": "https://www.orgo.ai/blog",
           "icon": "newspaper"
