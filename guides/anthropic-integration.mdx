@@ -3,20 +3,9 @@ title: 'Anthropic Integration'
 description: 'Connect Orgo with Anthropic Claude'
 ---
 
-This guide explains how to use Orgo with Anthropic's Claude models to create AI agents that can control computer environments.
-
-## Prerequisites
-
-Before you begin, make sure you have:
-
-- An Orgo account with API key
-- An Anthropic API key
-- The latest version of the Orgo SDK
-- Python 3.8 or newer
-
 ## Setup
 
-First, install the required packages:
+Install the required packages:
 
 ```bash
 pip install orgo anthropic
@@ -24,7 +13,7 @@ pip install orgo anthropic
 
 ## Basic Integration
 
-Connect Orgo with Claude in just a few steps:
+Connect Orgo with Claude:
 
 ```python
 from orgo import Computer
@@ -37,9 +26,9 @@ adapter = AnthropicAdapter(computer)
 claude = anthropic.Anthropic()  # Uses ANTHROPIC_API_KEY environment variable
 ```
 
-## Getting Tool Definitions
+## Using Tool Definitions
 
-To use Claude's computer use capabilities, you need to provide a tool definition:
+Include Orgo's computer in your Claude requests:
 
 ```python
 # Get the tool definition for Claude
@@ -56,7 +45,7 @@ response = claude.beta.messages.create(
 
 ## Handling Tool Use
 
-When Claude needs to use a tool, you'll need to execute the requested action and return the results:
+Process Claude's tool requests:
 
 ```python
 if response.stop_reason == "tool_use":
@@ -80,9 +69,9 @@ if response.stop_reason == "tool_use":
     messages.append({"role": "user", "content": [tool_result]})
 ```
 
-## Agent Loop
+## Complete Example
 
-To create a complete agent that can perform multi-step tasks, implement a loop to handle the conversation:
+Here's a full agent that can execute tasks:
 
 ```python
 from orgo import Computer
@@ -142,8 +131,6 @@ print(result)
 
 ## Supported Actions
 
-The AnthropicAdapter supports all actions required by Claude's computer use capabilities:
-
 | Action | Orgo Method | Description |
 | ------ | ----------- | ----------- |
 | `left_click` | `computer.left_click(x, y)` | Left click at coordinates |
@@ -153,30 +140,3 @@ The AnthropicAdapter supports all actions required by Claude's computer use capa
 | `key` | `computer.key(sequence)` | Press keys (e.g., "Enter", "ctrl+c") |
 | `screenshot` | `computer.screenshot()` | Take a screenshot |
 | `scroll` | `computer.scroll(direction, amount)` | Scroll in a direction |
-
-## Best Practices
-
-1. **Always clean up resources** - Use try/finally blocks to ensure `computer.shutdown()` is called
-2. **Handle errors gracefully** - Add error handling around tool execution
-3. **Set clear instructions** - Give Claude clear, specific tasks
-4. **Process all actions** - Be prepared to handle all possible computer actions
-5. **Monitor execution** - For sensitive operations, implement additional checks
-
-## Next Steps
-
-<CardGroup cols={2}>
-  <Card
-    title="API Reference"
-    icon="code"
-    href="/api-reference/anthropic"
-  >
-    View the AnthropicAdapter reference
-  </Card>
-  <Card
-    title="Complete Example"
-    icon="file-code"
-    href="https://github.com/orgo/examples/blob/main/anthropic_web_agent.py"
-  >
-    See a full implementation example
-  </Card>
-</CardGroup>
