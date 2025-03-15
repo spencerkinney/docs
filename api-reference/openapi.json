@@ -1,16 +1,13 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
+    "title": "Orgo API",
+    "description": "API to manage projects and desktop instances for AI agents",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://www.orgo.ai/api"
     }
   ],
   "security": [
@@ -19,36 +16,42 @@
     }
   ],
   "paths": {
-    "/plants": {
+    "/projects": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
+        "summary": "List Projects",
+        "description": "Retrieve all projects for the authenticated user",
+        "operationId": "listProjects",
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "List of projects",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
+                  "type": "object",
+                  "properties": {
+                    "projects": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Project"
+                      }
+                    }
                   }
                 }
               }
             }
           },
-          "400": {
-            "description": "Unexpected error",
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
             "content": {
               "application/json": {
                 "schema": {
@@ -60,31 +63,57 @@
         }
       },
       "post": {
-        "description": "Creates a new plant in the store",
+        "summary": "Create Project",
+        "description": "Create a new project with a desktop instance",
+        "operationId": "createProject",
         "requestBody": {
-          "description": "Plant to add to the store",
+          "description": "Optional configuration for the project",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "type": "object",
+                "properties": {
+                  "config": {
+                    "$ref": "#/components/schemas/InstanceConfig"
+                  }
+                }
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "Project created successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/Project"
                 }
               }
             }
           },
-          "400": {
-            "description": "unexpected error",
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Maximum project limit reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
             "content": {
               "application/json": {
                 "schema": {
@@ -96,28 +125,268 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/projects/by-name/{name}": {
+      "get": {
+        "summary": "Get Project by Name",
+        "description": "Retrieve a specific project by its name",
+        "operationId": "getProjectByName",
         "parameters": [
           {
-            "name": "id",
+            "name": "name",
             "in": "path",
-            "description": "ID of plant to delete",
+            "description": "Name of the project to retrieve",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
+          "200": {
+            "description": "Project details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
           },
-          "400": {
-            "description": "unexpected error",
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{id}/start": {
+      "post": {
+        "summary": "Start Project",
+        "description": "Start a stopped project",
+        "operationId": "startProject",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the project to start",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project started successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found or access denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{id}/restart": {
+      "post": {
+        "summary": "Restart Project",
+        "description": "Restart a running project",
+        "operationId": "restartProject",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the project to restart",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project restarted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found or access denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{id}/delete": {
+      "post": {
+        "summary": "Delete Project",
+        "description": "Delete a project and its associated desktop instance",
+        "operationId": "deleteProject",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the project to delete",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "deleted": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found or access denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
             "content": {
               "application/json": {
                 "schema": {
@@ -130,79 +399,113 @@
       }
     }
   },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
-        "requestBody": {
-          "description": "Plant added to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
-          }
-        }
-      }
-    }
-  },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "Project": {
         "type": "object",
         "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the project"
           },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+          "name": {
+            "type": "string",
+            "description": "Name of the project"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current status of the project",
+            "enum": ["starting", "running", "stopped", "error"]
+          },
+          "desktop": {
+            "$ref": "#/components/schemas/InstanceDetails"
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
+      "InstanceDetails": {
+        "type": "object",
+        "properties": {
+          "webUrl": {
+            "type": "string",
+            "description": "URL to access the web interface"
           },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
+          "vncHost": {
+            "type": "string",
+            "description": "Host for VNC connections"
+          },
+          "vncPort": {
+            "type": "integer",
+            "description": "Port for VNC connections"
+          },
+          "webPort": {
+            "type": "integer",
+            "description": "Port for web interface"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the desktop instance"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the desktop instance"
+          },
+          "customDomain": {
+            "type": "string",
+            "description": "Custom domain if configured"
           }
-        ]
+        }
+      },
+      "InstanceConfig": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Docker image to use for the desktop"
+          },
+          "memoryMb": {
+            "type": "integer",
+            "description": "Memory allocation in MB",
+            "default": 2048
+          },
+          "cpus": {
+            "type": "integer",
+            "description": "Number of CPUs to allocate",
+            "default": 1
+          },
+          "env": {
+            "type": "object",
+            "description": "Environment variables to set in the container",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "region": {
+            "type": "string",
+            "description": "Region to deploy the instance",
+            "default": "ewr"
+          },
+          "webPort": {
+            "type": "integer",
+            "description": "Port for web interface",
+            "default": 6080
+          },
+          "vncPort": {
+            "type": "integer",
+            "description": "Port for VNC connections",
+            "default": 5901
+          },
+          "customDomain": {
+            "type": "string",
+            "description": "Custom domain for the instance"
+          }
+        }
       },
       "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
         "type": "object",
         "properties": {
           "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
+            "type": "string",
+            "description": "Error message"
           }
         }
       }

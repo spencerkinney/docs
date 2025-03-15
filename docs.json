@@ -50,6 +50,23 @@
         "tab": "API Reference",
         "groups": [
           {
+            "group": "Overview",
+            "pages": [
+              "api-reference/introduction"
+            ]
+          },
+          {
+            "group": "Projects",
+            "pages": [
+              "api-reference/projects/list",
+              "api-reference/projects/create",
+              "api-reference/projects/get",
+              "api-reference/projects/start",
+              "api-reference/projects/restart",
+              "api-reference/projects/delete"
+            ]
+          },
+          {
             "group": "Client",
             "pages": [
               "api-reference/computer",
