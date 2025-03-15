@@ -1,71 +1,63 @@
 ---
 title: Introduction
-description: "Welcome to the home of your new documentation"
+description: 'Desktop infrastructure for AI agents'
 ---
 
 <img
   className="block dark:hidden"
-  src="/images/hero-light.png"
-  alt="Hero Light"
+  src="/images/hero-light.svg"
+  alt="Orgo Hero Light"
 />
 <img
   className="hidden dark:block"
-  src="/images/hero-dark.png"
-  alt="Hero Dark"
+  src="/images/hero-dark.svg"
+  alt="Orgo Hero Dark"
 />
 
-## Setting up
+## Overview
 
-The first step to world-class documentation is setting up your editing environments.
-
-<CardGroup cols={2}>
-  <Card
-    title="Edit Your Docs"
-    icon="pen-to-square"
-    href="https://mintlify.com/docs/quickstart"
-  >
-    Get your docs set up locally for easy development
-  </Card>
-  <Card
-    title="Preview Changes"
-    icon="image"
-    href="https://mintlify.com/docs/development"
-  >
-    Preview your changes before you push to make sure they're perfect
-  </Card>
-</CardGroup>
-
-## Make it yours
-
-Update your docs to your brand and add valuable content for the best user conversion.
+Orgo is desktop infrastructure for AI agents. Create cloud-based computer environments that AI models can control and interact with.
 
 <CardGroup cols={2}>
   <Card
-    title="Customize Style"
-    icon="palette"
-    href="https://mintlify.com/docs/settings/global"
+    title="Quick Start"
+    icon="play"
+    href="https://docs.orgo.ai/quickstart"
   >
-    Customize your docs to your company's colors and brands
+    Start using Orgo in under 5 minutes
   </Card>
   <Card
-    title="Reference APIs"
-    icon="code"
-    href="https://mintlify.com/docs/api-playground/openapi"
+    title="Create an Account"
+    icon="user-plus"
+    href="https://www.orgo.ai/start"
   >
-    Automatically generate endpoints from an OpenAPI spec
-  </Card>
-  <Card
-    title="Add Components"
-    icon="screwdriver-wrench"
-    href="https://mintlify.com/docs/content/components/accordions"
-  >
-    Build interactive features and designs to guide your users
-  </Card>
-  <Card
-    title="Get Inspiration"
-    icon="stars"
-    href="https://mintlify.com/customers"
-  >
-    Check out our showcase of our favorite documentation
+    Get your API key to start building
   </Card>
 </CardGroup>
+
+## How It Works
+
+Orgo provides virtual computer environments that AI agents can control to automate tasks.
+
+```python
+# Connect to a virtual computer
+computer = Computer()
+
+# Perform actions
+computer.left_click(100, 200)
+computer.type("Hello world")
+computer.screenshot()
+```
+
+## Anthropic Integration
+
+Seamlessly integrate with Anthropic's Claude and Computer Use.
+
+```python
+# Setup
+computer = Computer()
+adapter = AnthropicAdapter(computer)
+
+# Get Claude-compatible tool definition
+tool_definition = adapter.get_tool_definition()
+```
