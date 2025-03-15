@@ -1,0 +1,182 @@
+---
+title: 'Anthropic Integration'
+description: 'Connect Orgo with Anthropic Claude'
+---
+
+This guide explains how to use Orgo with Anthropic's Claude models to create AI agents that can control computer environments.
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- An Orgo account with API key
+- An Anthropic API key
+- The latest version of the Orgo SDK
+- Python 3.8 or newer
+
+## Setup
+
+First, install the required packages:
+
+```bash
+pip install orgo anthropic
+```
+
+## Basic Integration
+
+Connect Orgo with Claude in just a few steps:
+
+```python
+from orgo import Computer
+from orgo.adapters import AnthropicAdapter
+import anthropic
+
+# Initialize components
+computer = Computer()  # Uses ORGO_API_KEY environment variable
+adapter = AnthropicAdapter(computer)
+claude = anthropic.Anthropic()  # Uses ANTHROPIC_API_KEY environment variable
+```
+
+## Getting Tool Definitions
+
+To use Claude's computer use capabilities, you need to provide a tool definition:
+
+```python
+# Get the tool definition for Claude
+tool_definition = adapter.get_tool_definition()
+
+# Use it in your Claude request
+response = claude.beta.messages.create(
+    model="claude-3-7-sonnet-20250219",
+    tools=[tool_definition],
+    messages=[{"role": "user", "content": "Open Firefox and search for cats"}],
+    betas=["computer-use-2025-01-24"]  # Required for computer use
+)
+```
+
+## Handling Tool Use
+
+When Claude needs to use a tool, you'll need to execute the requested action and return the results:
+
+```python
+if response.stop_reason == "tool_use":
+    # Find the tool use request in Claude's response
+    tool = next(block for block in response.content if block.type == "tool_use")
+    
+    # Execute the requested action based on its type
+    if tool.input.get("action") == "left_click":
+        x, y = tool.input["coordinate"]
+        computer.left_click(x, y)
+    elif tool.input.get("action") == "type":
+        computer.type(tool.input["text"])
+    elif tool.input.get("action") == "key":
+        computer.key(tool.input["text"])
+    
+    # Format the result to send back to Claude
+    tool_result = adapter.format_result(tool_id=tool.id)
+    
+    # Continue the conversation with the tool result
+    messages.append({"role": "assistant", "content": response.content})
+    messages.append({"role": "user", "content": [tool_result]})
+```
+
+## Agent Loop
+
+To create a complete agent that can perform multi-step tasks, implement a loop to handle the conversation:
+
+```python
+from orgo import Computer
+from orgo.adapters import AnthropicAdapter
+import anthropic
+
+def run_agent(prompt):
+    computer = Computer()
+    adapter = AnthropicAdapter(computer)
+    claude = anthropic.Anthropic()
+    
+    try:
+        # Start conversation
+        messages = [{"role": "user", "content": prompt}]
+        
+        while True:
+            # Get Claude's response
+            response = claude.beta.messages.create(
+                model="claude-3-7-sonnet-20250219",
+                tools=[adapter.get_tool_definition()],
+                messages=messages,
+                betas=["computer-use-2025-01-24"]
+            )
+            
+            # Add Claude's response to conversation
+            messages.append({"role": "assistant", "content": response.content})
+            
+            # Check if Claude wants to use a tool
+            if response.stop_reason != "tool_use":
+                # Task complete, return Claude's final response
+                return response.content
+            
+            # Extract tool use request
+            tool = next(block for block in response.content if block.type == "tool_use")
+            
+            # Execute the requested action
+            if tool.input.get("action") == "left_click":
+                computer.left_click(tool.input["coordinate"][0], tool.input["coordinate"][1])
+            elif tool.input.get("action") == "type":
+                computer.type(tool.input["text"])
+            elif tool.input.get("action") == "key":
+                computer.key(tool.input["text"])
+            # Add support for more actions as needed
+            
+            # Send tool result back to Claude
+            tool_result = adapter.format_result(tool_id=tool.id)
+            messages.append({"role": "user", "content": [tool_result]})
+    
+    finally:
+        # Always clean up resources
+        computer.shutdown()
+
+# Example usage
+result = run_agent("Open Firefox and navigate to anthropic.com")
+print(result)
+```
+
+## Supported Actions
+
+The AnthropicAdapter supports all actions required by Claude's computer use capabilities:
+
+| Action | Orgo Method | Description |
+| ------ | ----------- | ----------- |
+| `left_click` | `computer.left_click(x, y)` | Left click at coordinates |
+| `right_click` | `computer.right_click(x, y)` | Right click at coordinates |
+| `double_click` | `computer.double_click(x, y)` | Double click at coordinates |
+| `type` | `computer.type(text)` | Type text |
+| `key` | `computer.key(sequence)` | Press keys (e.g., "Enter", "ctrl+c") |
+| `screenshot` | `computer.screenshot()` | Take a screenshot |
+| `scroll` | `computer.scroll(direction, amount)` | Scroll in a direction |
+
+## Best Practices
+
+1. **Always clean up resources** - Use try/finally blocks to ensure `computer.shutdown()` is called
+2. **Handle errors gracefully** - Add error handling around tool execution
+3. **Set clear instructions** - Give Claude clear, specific tasks
+4. **Process all actions** - Be prepared to handle all possible computer actions
+5. **Monitor execution** - For sensitive operations, implement additional checks
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/anthropic"
+  >
+    View the AnthropicAdapter reference
+  </Card>
+  <Card
+    title="Complete Example"
+    icon="file-code"
+    href="https://github.com/orgo/examples/blob/main/anthropic_web_agent.py"
+  >
+    See a full implementation example
+  </Card>
+</CardGroup>
