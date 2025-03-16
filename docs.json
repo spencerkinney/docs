@@ -39,7 +39,7 @@
             ]
           },
           {
-            "group": "Integration",
+            "group": "Integrations",
             "pages": [
               "guides/anthropic-integration"
             ]
